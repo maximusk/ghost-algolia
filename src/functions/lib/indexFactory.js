@@ -32,10 +32,9 @@ const indexFactory = (algoliaSettings) => {
     save() {
       return index.addObjects(fragments);
     },
-    // TODO
     delete(post) {
-      return index.deleteByQuery(post.attributes.uuid, {
-        restrictSearchableAttributes: 'post_uuid',
+      return index.deleteBy({
+        filters: 'post_uuid:' + post.uuid,
       });
     },
     getFragments() {

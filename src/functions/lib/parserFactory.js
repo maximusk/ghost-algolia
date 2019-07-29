@@ -19,9 +19,8 @@ const parserFactory = () => ({
         fragment.id = post.slug;
         // we give a higher importance to the intro (the first headless fragment)
         fragment.importance = 0;
-        fragment.post_uuid = post.uuid;
-        fragment.post_title = post.title;
-        fragment.post_published_at = post.published_at;
+
+        updateFragment(fragment, post);
       }
 
       nodes.forEach((node) => {
@@ -34,9 +33,8 @@ const parserFactory = () => ({
           fragment.heading = node.childNodes[0].value;
           fragment.id = `${post.slug}#${slug(fragment.heading, { lower: true })}--${headingCount}`;
           fragment.importance = getHeadingLevel(node.nodeName);
-          fragment.post_uuid = post.uuid;
-          fragment.post_title = post.title;
-          fragment.post_published_at = post.published_at;
+          
+          updateFragment(fragment, post);
         } else {
           if (fragment.content === undefined) fragment.content = '';
           // If node not a heading, then it is a text node and always has a value property
@@ -52,5 +50,21 @@ const parserFactory = () => ({
     return index.fragmentsCount();
   },
 });
+
+function updateFragment(fragment, post) {
+  fragment.post_uuid = post.uuid;
+  fragment.post_title = post.title;
+  fragment.feature_image = post.feature_image;
+  fragment.post_published_at = post.published_at;
+  fragment.excerpt = post.excerpt;
+  fragment.tags = post.tags.map(tag => tag.name);
+
+  if (post.primary_author) {
+    fragment.author_id = post.primary_author.id;
+    fragment.author_name = post.primary_author.name;
+    fragment.author_url = post.primary_author.url;
+    fragment.author_profile_image = post.primary_author.profile_image;
+  }
+}
 
 export default parserFactory;
