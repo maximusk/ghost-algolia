@@ -2,6 +2,7 @@ import { parseFragment } from 'parse5';
 import striptags from 'striptags';
 import slug from 'slug';
 import { isHeading, getHeadingLevel } from './utils';
+const downsize = require('downsize');
 
 const parserFactory = () => ({
   // Returns the number of fragments successfully parsed
@@ -56,7 +57,7 @@ function updateFragment(fragment, post) {
   fragment.post_title = post.title;
   fragment.feature_image = post.feature_image;
   fragment.post_published_at = post.published_at;
-  fragment.excerpt = post.excerpt;
+  fragment.excerpt = getExcerpt(post);
   fragment.tags = post.tags.map(tag => tag.name);
 
   if (post.primary_author) {
@@ -65,6 +66,21 @@ function updateFragment(fragment, post) {
     fragment.author_url = post.primary_author.url;
     fragment.author_profile_image = post.primary_author.profile_image;
   }
+}
+
+function getExcerpt(post) {
+  const html = post.custom_excerpt ? String(post.custom_excerpt) : post.html ? String(post.html) : '';
+
+  // Strip inline and bottom footnotes
+  var excerpt = html.replace(/<a href="#fn.*?rel="footnote">.*?<\/a>/gi, '');
+  excerpt = excerpt.replace(/<div class="footnotes"><ol>.*?<\/ol><\/div>/, '');
+  // Strip other html
+  excerpt = excerpt.replace(/<\/?[^>]+>/gi, '');
+  excerpt = excerpt.replace(/(\r\n|\n|\r)+/gm, ' ');
+
+  return downsize(excerpt, {
+    words: 50
+  });
 }
 
 export default parserFactory;
